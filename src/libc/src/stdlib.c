@@ -19,24 +19,3 @@ long atol(const char *nptr)
 
     return ret * sign;
 }
-
-#ifndef __kernel__
-void *malloc(size_t size)
-{
-    (void) size;
-    return NULL;
-}
-
-void free(void *ptr)
-{
-    (void) ptr;
-}
-
-
-void *realloc(void *ptr, size_t size)
-{
-    (void) ptr;
-    (void) size;
-    return NULL;
-}
-#endif /* !__kernel__ */

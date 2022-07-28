@@ -1,11 +1,10 @@
+#include <stdint.h>
+
 #ifdef __kernel__
 #include <kernel/inc/arch.h>
 #include <kernel/inc/klock.h>
 #include <kernel/inc/pmm.h>
 #include <kernel/inc/loader.h>
-
-#include <stdint.h>
-
 
 DECLARE_LOCK(liballoc);
 

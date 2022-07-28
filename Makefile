@@ -27,7 +27,8 @@ CFLAGS =							\
 	-Os								\
 	-D__$(ARCH)__					\
 	-DSTB_SPRINTF_IMPLEMENTATION	\
-	-Isrc/libc/inc
+	-Isrc/libc/inc					\
+	-Isrc/
 
 ASFLAGS =							\
 	-F dwarf						\

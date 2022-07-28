@@ -13,7 +13,7 @@ task_t *task_create(void *space, char const *path, uintptr_t ip)
     self->space = space;
     self->stack = pmm_alloc(STACK_SIZE);
     
-    memncpy(self->path, path, UNIX_PATH_LIMIT);
+    memcpy(self->path, path, UNIX_PATH_LIMIT);
 
     if (self->stack == NULL)
     {

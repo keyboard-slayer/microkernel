@@ -1,21 +1,18 @@
 #include <unistd.h>
-#include <lock.h>
+
+#error "Userspace locks are not implemented yet"
 
 #ifndef __kernel__
 
 #define PAGE_SIZE 4096
 
-DECLARE_LOCK(liballoc);
-
 int liballoc_lock(void)
 {
-    LOCK(liballoc);
     return 0;
 }
 
 int liballoc_unlock(void)
 {
-    UNLOCK(liballoc);
     return 0;
 }
 

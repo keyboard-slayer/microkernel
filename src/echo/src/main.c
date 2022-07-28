@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <json.h>
+#include <assert.h>
 
 #include <protocol/inc/echo.h>
 
@@ -21,6 +22,7 @@ static void server(void)
 
 int _start(void)
 {
+    printf("Hello from echo !\n");
     pid_t pid = getpid();
 
     if (pid == 1)

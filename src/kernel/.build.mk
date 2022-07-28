@@ -11,7 +11,6 @@ KERNEL_CFLAGS = 					\
 	-fno-zero-initialized-in-bss	\
 	-mcmodel=kernel					\
 	-m64							\
-	-Isrc/							\
 	-DSCHED_QUANTUM=$(SCHED_QUANTUM)\
 	-D__kernel__
 

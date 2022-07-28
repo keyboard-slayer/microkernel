@@ -5,6 +5,7 @@
 #include <libc/inc/stdlib.h>
 
 #include <stddef.h>
+#include <assert.h>
 
 #include "../inc/arch.h"
 #include "../inc/logging.h"
@@ -41,6 +42,7 @@ void sched_yield(regs_t *regs)
         cpu_self()->tick = 0;
         task_t *current_task = cpu_self()->tasks.data[cpu_self()->current];
         context_save(&current_task->context, regs);
+        assert(current_task->context.regs.rip != 0);
 
         for (;;)
         {
