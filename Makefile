@@ -14,7 +14,7 @@ SCHED_QUANTUM ?= 8
 
 CFLAGS =							\
 	-std=c2x						\
-	-fbuiltin						\
+	-fno-builtin					\
 	-pedantic						\
 	-Wpedantic						\
 	-Werror							\

@@ -1,5 +1,5 @@
 ECHO = $(BUILD)/echo.elf
-ECHO_SRC = $(wildcard src/echo/src/*.c) $(LIBC_SRC) src/protocol/src/echo.c $(wildcard src/liballoc/*.c)
+ECHO_SRC = $(wildcard src/echo/src/*.c) $(LIBC_SRC) src/protocol/src/echo.c
 BUILD_ECHO = $(BUILD)/echo
 ECHO_OBJ = $(patsubst %, $(BUILD_ECHO)/%.o, $(ECHO_SRC))
 ECHO_CFLAGS = $(CFLAGS) -mno-sse -mno-sse2

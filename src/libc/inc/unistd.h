@@ -12,7 +12,8 @@ enum syscall
     SYS_SENDIPC,
     SYS_RECVIPC_SYNC,
     SYS_ALLOC,
-    SYS_FREE
+    SYS_FREE,
+    SYS_REALLOC
 };
 
 void syslog(char const *message);

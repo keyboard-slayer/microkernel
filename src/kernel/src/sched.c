@@ -1,3 +1,4 @@
+#include "vec.h"
 #ifdef __x86_64__ 
 #include <x86_64/inc/cpu.h>
 #endif /* !__x86_64__ */
@@ -16,7 +17,7 @@
 #include "../inc/klock.h"
 
 static pid_t last_pid = 0;
-static bool sched_running = true;
+static bool sched_running = false;
 
 DECLARE_LOCK(sched);
 
@@ -31,6 +32,8 @@ void sched_init(void)
     {
         vec_push(&cpu(i)->tasks, boot);
     }
+
+    sched_running = true;
 
     UNLOCK(sched);
 }
@@ -96,9 +99,44 @@ bool sched_is_running(void)
 
 task_t *sched_current(void)
 {
-    LOCK(sched);
     task_t *task = cpu_self()->tasks.data[cpu_self()->current];
-    UNLOCK(sched);
-
     return task;
+}
+
+task_t *sched_by_ident(uint64_t ident)
+{
+    task_t *current;
+    size_t index;
+
+    for (size_t i = 0; i < cpu_get_count(); i++)
+    {
+        vec_foreach(&cpu(i)->tasks, current, index)
+        {
+            if (current->ident == ident)
+            {
+                return current;
+            }
+        }
+    }
+
+    return NULL;
+}
+
+task_t *sched_by_pid(pid_t pid)
+{
+    task_t *current;
+    size_t index;
+
+    for (size_t i = 0; i < cpu_get_count(); i++)
+    {
+        vec_foreach(&cpu(i)->tasks, current, index)
+        {
+            if (current->pid == pid)
+            {
+                return current;
+            }
+        }
+    }
+
+    return NULL;
 }
