@@ -27,3 +27,8 @@ uintptr_t ipc_receive_sync(void)
 {
     return syscall(SYS_RECVIPC_SYNC, 0);
 }
+
+void ipc_send(ipc_t *ipc)
+{
+    syscall(SYS_SENDIPC, (uintptr_t) ipc);
+}

@@ -14,8 +14,8 @@
     message->payload = (uintptr_t) json_dump({rpc_module}_{rpc_function}_req);
     message->payload_require_free = true;
 
-    syscall(SYS_SENDIPC, (uintptr_t) message);
-    message = (ipc_t *) syscall(SYS_RECVIPC_SYNC, 0);
+    ipc_send(message);
+    message = (ipc_t *) ipc_receive_sync();
 
     json_t resp = json_parse((char const *) message->payload);
     json_t success = json_get(resp, "rpc_success");
@@ -48,7 +48,7 @@ void rpc_response_{rpc_function}(pid_t pid, {C_response_type} response)
     ipc->payload = (uintptr_t) json_dump({rpc_module}_{rpc_function}_resp);
     ipc->payload_require_free = true;
     
-    syscall(SYS_SENDIPC, (uintptr_t) ipc);
+    ipc_send(ipc);
     json_free(&{rpc_module}_{rpc_function}_resp);
 }}
 

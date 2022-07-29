@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <sys/types.h>
+#include <ipc.h>
 
 enum syscall
 {
@@ -18,6 +19,7 @@ enum syscall
 
 void syslog(char const *message);
 uintptr_t ipc_receive_sync(void);
+void ipc_send(ipc_t *ipc);
 pid_t getpid(void);
 uint64_t syscall_impl(uint64_t syscall_id, uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4);
 #define __syscall(id, a1, a2, a3, a4, ...) syscall_impl(id, a1, a2, a3, a4)
