@@ -14,7 +14,7 @@ Example of VFS IPC:
 
     2. Server receive the IPC.
 
-    3. Server response the IPC.
+    3. Server send IPC response.
     {
         "rpc_function": VFS_OPEN,
         "rpc_success": True,
@@ -33,4 +33,3 @@ class VFS_FILE_ACCESS:
 @endpoint
 class VfsServer:
     def open(path: str, flags: VFS_FILE_ACCESS) -> int: pass
-    def test() -> None: pass

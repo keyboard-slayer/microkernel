@@ -1,8 +1,8 @@
 #include "../inc/com.h"
 #include "../inc/logging.h"
-#include "../inc/lock.h"
+#include "../inc/klock.h"
 
-#include <stb_sprintf.h>
+#include <stdio.h>
 
 #ifdef __x86_64__
 #include <x86_64/inc/madt.h>
@@ -23,13 +23,13 @@ void klog_impl(log_level_t level, char const *filename, size_t lineno, char cons
 
     if (level != NONE)
     {
-        stbsp_sprintf(buf, "%s\033[33mcore %d %s:%ld\033[0m ", log[level], cpu_id(), filename, lineno);
+        sprintf(buf, "%s\033[33mcore %d %s:%ld\033[0m ", log[level], cpu_id(), filename, lineno);
     }
 
     com_puts(buf);
 
     va_start(args, format);
-    stbsp_vsprintf(buf, format, args);
+    vsprintf(buf, format, args);
     com_puts(buf);
     com_putc('\n');
     va_end(args);

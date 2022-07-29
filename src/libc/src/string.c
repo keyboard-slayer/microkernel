@@ -28,34 +28,26 @@ int memcmp(void const *s1, void const *s2, size_t n)
     return 0;
 }
 
-void *memcpy(void *dst, void const *src, size_t n)
+void *memcpy(void *dest, const void *src, size_t n)
 {
-    unsigned char *p1 = dst;
-    unsigned char const *p2 = src;
-    while (n--)
+    if (src == NULL)
     {
-        *p1++ = *p2++;
+        dest = NULL;
+        return NULL;
     }
-    return dst;
+
+    size_t i;
+    char *cdest = (char *) dest;
+    char *csrc = (char *) src;
+
+    for (i = 0; i < n; i++)
+    {
+        cdest[i] = csrc[i];
+    }
+
+    return (void *) cdest;
 }
 
-void *memncpy(void *dst, void const *src, size_t n)
-{
-    unsigned char *p1 = dst;
-    unsigned char const *p2 = src;
-    while (n--)
-    {
-        if (*p2)
-        {
-            *p1++ = *p2++;
-        }
-        else
-        {
-            break;
-        }
-    }
-    return dst;
-}
 
 char *strrchr(char const *s, int c)
 {
@@ -73,15 +65,22 @@ char *strrchr(char const *s, int c)
     return last;
 }
 
-char *strndup(const char *s, size_t n)
+char *strndup(char const *s, size_t n)
 {
-    char *dup = malloc(n + 1);
+    size_t len = strlen(s);
+    if (n < len)
+    {
+        len = n;
+    }
+
+    char *dup = malloc(len + 1);
 
     if (dup)
     {
-        memcpy(dup, s, n);
-        dup[n] = '\0';
+        memcpy(dup, s, len);
+        dup[len] = '\0';
     }
+
     return dup;
 }
 

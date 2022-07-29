@@ -14,7 +14,7 @@ SCHED_QUANTUM ?= 8
 
 CFLAGS =							\
 	-std=c2x						\
-	-fbuiltin						\
+	-fno-builtin					\
 	-pedantic						\
 	-Wpedantic						\
 	-Werror							\
@@ -24,10 +24,11 @@ CFLAGS =							\
 	-Wno-gnu-statement-expression	\
 	-ggdb							\
 	-fno-stack-protector			\
-	-O0								\
+	-Os								\
 	-D__$(ARCH)__					\
 	-DSTB_SPRINTF_IMPLEMENTATION	\
-	-Isrc/libc/inc
+	-Isrc/libc/inc					\
+	-Isrc/
 
 ASFLAGS =							\
 	-F dwarf						\
@@ -53,7 +54,7 @@ include src/$(ARCH)/.build.mk
 include src/$(LOADER)/.build.mk
 include src/libc/.build.mk
 include src/kernel/.build.mk
-include src/userspace-test/.build.mk
+include src/echo/.build.mk
 
 run: sysroot
 	$(QEMU) $(QEMU_FLAGS)

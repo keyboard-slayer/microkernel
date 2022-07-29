@@ -1,3 +1,4 @@
+#include "vec.h"
 #ifdef __x86_64__ 
 #include <x86_64/inc/cpu.h>
 #endif /* !__x86_64__ */
@@ -5,6 +6,7 @@
 #include <libc/inc/stdlib.h>
 
 #include <stddef.h>
+#include <assert.h>
 
 #include "../inc/arch.h"
 #include "../inc/logging.h"
@@ -12,10 +14,10 @@
 #include "../inc/pmm.h"
 #include "../inc/utils.h"
 #include "../inc/loader.h"
-#include "../inc/lock.h"
+#include "../inc/klock.h"
 
 static pid_t last_pid = 0;
-static bool sched_running = true;
+static bool sched_running = false;
 
 DECLARE_LOCK(sched);
 
@@ -31,6 +33,8 @@ void sched_init(void)
         vec_push(&cpu(i)->tasks, boot);
     }
 
+    sched_running = true;
+
     UNLOCK(sched);
 }
 
@@ -41,6 +45,7 @@ void sched_yield(regs_t *regs)
         cpu_self()->tick = 0;
         task_t *current_task = cpu_self()->tasks.data[cpu_self()->current];
         context_save(&current_task->context, regs);
+        assert(current_task->context.regs.rip != 0);
 
         for (;;)
         {
@@ -94,9 +99,44 @@ bool sched_is_running(void)
 
 task_t *sched_current(void)
 {
-    LOCK(sched);
     task_t *task = cpu_self()->tasks.data[cpu_self()->current];
-    UNLOCK(sched);
-
     return task;
+}
+
+task_t *sched_by_ident(uint64_t ident)
+{
+    task_t *current;
+    size_t index;
+
+    for (size_t i = 0; i < cpu_get_count(); i++)
+    {
+        vec_foreach(&cpu(i)->tasks, current, index)
+        {
+            if (current->ident == ident)
+            {
+                return current;
+            }
+        }
+    }
+
+    return NULL;
+}
+
+task_t *sched_by_pid(pid_t pid)
+{
+    task_t *current;
+    size_t index;
+
+    for (size_t i = 0; i < cpu_get_count(); i++)
+    {
+        vec_foreach(&cpu(i)->tasks, current, index)
+        {
+            if (current->pid == pid)
+            {
+                return current;
+            }
+        }
+    }
+
+    return NULL;
 }

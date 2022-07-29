@@ -56,5 +56,6 @@ typedef struct
 
 void vmm_init(void);
 void vmm_switch_space(void *space);
+void vmm_unmap(void *pml, uintptr_t vaddr);
 
 #endif /* !ARCH_X86_64_INC_VMM_H */

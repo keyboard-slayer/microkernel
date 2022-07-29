@@ -10,7 +10,6 @@ void *memcpy(void *dest, const void *src, size_t n);
 size_t strlen(const char *s);
 int memcmp(const void *s1, const void *s2, size_t n);
 void *memcpy(void *dst, const void *src, size_t n);
-void *memncpy(void *dst, const void *src, size_t n);
 char *strrchr(const char *s, int c);
 char *strdup(const char *s);
 char *strndup(const char *s, size_t n);

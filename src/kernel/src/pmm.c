@@ -8,7 +8,7 @@
 #include "../inc/pmm.h"
 #include "../inc/loader.h"
 #include "../inc/logging.h"
-#include "../inc/lock.h"
+#include "../inc/klock.h"
 #include "../inc/utils.h"
 
 DECLARE_LOCK(pmm);

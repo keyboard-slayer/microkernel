@@ -41,6 +41,7 @@ void vmm_switch_space(void *pml);
 bool vmm_is_mapped(void *pml, uint64_t virt);
 void *vmm_get_kernel_pml(void);
 void *vmm_get_current_pml(void);
+void vmm_unmap(void *space, uint64_t vaddr);
 
 context_t context_create(uintptr_t ip);
 void context_switch(context_t *ctx, regs_t *regs);

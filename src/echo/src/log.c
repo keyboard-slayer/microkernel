@@ -1,6 +1,11 @@
-#include <stb_sprintf.h>
+#include <stdio.h>
 #include <stdarg.h>
 #include <unistd.h>
+
+void puts(char const *s)
+{
+    syslog(s);
+}
 
 int printf(const char *format, ...)
 {
@@ -8,8 +13,8 @@ int printf(const char *format, ...)
     va_start(args, format);
 
     char buf[512] = {0};
-    stbsp_vsprintf(buf, format, args);
-    syslog(buf);
+    vsprintf(buf, format, args);
+    puts(buf);
 
     va_end(args);
 

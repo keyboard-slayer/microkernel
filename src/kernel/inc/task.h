@@ -6,6 +6,7 @@
 #include <sys/types.h>
 
 #include "arch.h"
+#include "ipc.h"
 
 #define UNIX_PATH_LIMIT 4096
 
@@ -24,8 +25,10 @@ typedef struct
     char path[UNIX_PATH_LIMIT];
     void *space;
     uint8_t *stack;
+    uint64_t ident;
     context_t context;
     enum task_state state;
+    ipc_mailbox_t mailbox;
 } task_t;
 
 typedef vec(task_t *) vec_task_t;

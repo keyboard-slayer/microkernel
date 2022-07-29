@@ -7,7 +7,6 @@
 -Wextra		
 -Wall
 -DSTB_SPRINTF_IMPLEMENTATION
--D__kernel__
 -Isrc/
 -DSCHED_QUANTUM=8
 -Wno-gnu-empty-struct

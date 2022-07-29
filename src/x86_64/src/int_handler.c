@@ -1,11 +1,15 @@
 #include <kernel/inc/logging.h>
 #include <kernel/inc/arch.h>
 #include <kernel/inc/sched.h>
+#include <kernel/inc/klock.h>
+
 
 #include "../inc/regs.h"
 #include "../inc/madt.h"
 #include "../inc/asm.h"
 #include "../inc/vmm.h"
+
+DECLARE_LOCK(int_handler_lock);
 
 static char *exception_messages[32] = {
     "Division By Zero",
@@ -54,7 +58,10 @@ static void output_exception(regs_t const *regs)
     __asm__ volatile ("mov %%cr3, %0":"=r" (cr3));
     __asm__ volatile ("mov %%cr4, %0":"=r" (cr4));
 
-    klog(ERROR, "Exception %s (0x%x) Err: %d\n\t", exception_messages[regs->intno], 
+    LOCK(int_handler_lock);
+
+    klog(NONE, "\n");
+    klog(ERROR, "Exception %s (0x%x) Err: %d", exception_messages[regs->intno], 
                  regs->intno, regs->err);
 
     klog(NONE, "RAX %p RBX %p RCX %p RDX %p", regs->rax,
@@ -67,7 +74,9 @@ static void output_exception(regs_t const *regs)
                  regs->r13, regs->r14, regs->r15);
     klog(NONE, "CR0 %p CR2 %p CR3 %p CR4 %p", cr0, cr2, cr3, cr4);
     klog(NONE, "CS  %p SS  %p FLG %p", regs->cs, regs->ss, regs->rflags);
-    klog(NONE, "RIP \033[7m%p\033[0m", regs->rip);
+    klog(NONE, "RIP \033[7m%p\033[0m\n\n", regs->rip);
+
+    UNLOCK(int_handler_lock);
 }
 
 uint64_t interrupts_handler(uint64_t rsp)
@@ -76,7 +85,6 @@ uint64_t interrupts_handler(uint64_t rsp)
 
     if (regs->intno < 32)
     {
-        __asm__ volatile ("cli");
         output_exception(regs);
 
         for(;;)

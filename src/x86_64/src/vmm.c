@@ -1,6 +1,6 @@
 #include <kernel/inc/loader.h>
 #include <kernel/inc/logging.h>
-#include <kernel/inc/lock.h>
+#include <kernel/inc/klock.h>
 #include <kernel/inc/pmm.h>
 #include <kernel/inc/arch.h>
 
@@ -169,4 +169,19 @@ bool vmm_is_mapped(void *pml, uint64_t virt)
     }
 
     return last_entry->entries[PMLX_GET_INDEX(virt, 0)].present;
+}
+
+void vmm_unmap(void *pml, uintptr_t vaddr)
+{
+    LOCK(vmm);
+    pml_t *last_entry = pml;
+
+    for (size_t i = 3; i > 0; i--)
+    {
+        last_entry = (pml_t *) vmm_get_pml_alloc(last_entry, PMLX_GET_INDEX(vaddr, i), true, false);
+    }
+
+    last_entry->entries[PMLX_GET_INDEX(vaddr, 0)] = (pml_entry_t) {0};
+
+    UNLOCK(vmm);
 }

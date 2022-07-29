@@ -17,3 +17,13 @@ void syslog(const char *message)
 {
     syscall(SYS_LOG, (uint64_t) message);
 }
+
+pid_t getpid(void)
+{
+    return (pid_t) syscall(SYS_GETPID, 0);
+}
+
+uintptr_t ipc_receive_sync(void)
+{
+    return syscall(SYS_RECVIPC_SYNC, 0);
+}

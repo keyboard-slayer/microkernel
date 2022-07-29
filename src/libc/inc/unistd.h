@@ -8,10 +8,16 @@
 enum syscall
 {
     SYS_LOG,
-    SYS_GETPID
+    SYS_GETPID,
+    SYS_SENDIPC,
+    SYS_RECVIPC_SYNC,
+    SYS_ALLOC,
+    SYS_FREE,
+    SYS_REALLOC
 };
 
 void syslog(char const *message);
+uintptr_t ipc_receive_sync(void);
 pid_t getpid(void);
 uint64_t syscall_impl(uint64_t syscall_id, uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4);
 #define __syscall(id, a1, a2, a3, a4, ...) syscall_impl(id, a1, a2, a3, a4)

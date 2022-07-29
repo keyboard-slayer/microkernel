@@ -5,6 +5,8 @@
 #include "../inc/elf.h"
 #include "../inc/sched.h"
 
+#include "protocol/inc/echo.h"
+
 #include <assert.h>
 
 int _start(void)
@@ -12,11 +14,16 @@ int _start(void)
     arch_init();
     sched_init();
 
-    void *executable = loader_get_module("/bin/test.elf");
+    void *executable = loader_get_module("/bin/echo.elf");
     assert(executable != NULL);
 
-    task_t *bin = loader_binary(executable, "/bin/test.elf");
-    sched_push(bin);
+    task_t *client = loader_binary(executable, "/bin/echo.elf");
+    task_t *server = loader_binary(executable, "/bin/echo.elf");
+
+    server->ident = ECHO_IDENT;
+
+    sched_push(client);
+    sched_push(server);
 
     for (;;);
 

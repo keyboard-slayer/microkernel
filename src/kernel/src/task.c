@@ -5,6 +5,8 @@
 #include <libc/inc/stdlib.h>
 #include <libc/inc/string.h>
 
+#include <assert.h>
+
 #include "../inc/task.h"
 
 task_t *task_create(void *space, char const *path, uintptr_t ip)
@@ -13,13 +15,9 @@ task_t *task_create(void *space, char const *path, uintptr_t ip)
     self->space = space;
     self->stack = pmm_alloc(STACK_SIZE);
     
-    memncpy(self->path, path, UNIX_PATH_LIMIT);
+    memcpy(self->path, path, UNIX_PATH_LIMIT);
 
-    if (self->stack == NULL)
-    {
-        klog(ERROR, "Failed to allocate stack for task");
-        halt();
-    }
+    assert(self->stack != NULL);
 
     vmm_map(space, (virtual_physical_map_t) {
         .physical = (uintptr_t) self->stack,
@@ -27,6 +25,7 @@ task_t *task_create(void *space, char const *path, uintptr_t ip)
         .length = STACK_SIZE
     }, true);
 
+    vec_init(&self->mailbox);
     self->context = context_create(ip);
     return self;
 }

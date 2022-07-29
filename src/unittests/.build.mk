@@ -10,7 +10,6 @@ UNITTEST_CFLAGS = 				\
 	-Wextra						\
 	-ggdb						\
 	-fno-stack-protector		\
-	-Isrc/						\
 	-fsanitize=address			\
 	-fsanitize=undefined		\
 	-lcmocka

@@ -1,6 +1,6 @@
 
 #include <kernel/inc/arch.h>
-#include <kernel/inc/lock.h>
+#include <kernel/inc/klock.h>
 #include <kernel/inc/logging.h>
 #include <kernel/inc/utils.h>
 
