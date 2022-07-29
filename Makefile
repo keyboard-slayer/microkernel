@@ -54,7 +54,7 @@ include src/$(ARCH)/.build.mk
 include src/$(LOADER)/.build.mk
 include src/libc/.build.mk
 include src/kernel/.build.mk
-include src/echo/.build.mk
+include src/pkgs/.build.mk
 
 run: sysroot
 	$(QEMU) $(QEMU_FLAGS)

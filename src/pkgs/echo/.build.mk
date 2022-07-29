@@ -1,5 +1,5 @@
 ECHO = $(BUILD)/echo.elf
-ECHO_SRC = $(wildcard src/echo/src/*.c) $(LIBC_SRC) src/protocol/src/echo.c
+ECHO_SRC = $(wildcard src/pkgs/echo/src/*.c) $(LIBC_SRC) src/protocol/src/echo.c
 BUILD_ECHO = $(BUILD)/echo
 ECHO_OBJ = $(patsubst %, $(BUILD_ECHO)/%.o, $(ECHO_SRC))
 ECHO_CFLAGS = $(CFLAGS) -mno-sse -mno-sse2
@@ -14,7 +14,7 @@ $(BUILD_ECHO)/%.s.o: %.s
 
 $(ECHO): $(ECHO_OBJ)
 	@$(MKCWDsrc/liballoc/compat)
-	$(LD) $(LDFLAGS) -o $@ $^ -T src/echo/link.ld
+	$(LD) $(LDFLAGS) -o $@ $^ -T src/pkgs/link.ld
 
 echo: $(ECHO)
 	cp $(ECHO) $(SYSROOT)/bin/echo.elf
