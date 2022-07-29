@@ -32,3 +32,8 @@ void ipc_send(ipc_t *ipc)
 {
     syscall(SYS_SENDIPC, (uintptr_t) ipc);
 }
+
+int64_t ipc_set_identifier(uint64_t ident)
+{
+    return syscall(SYS_SETIDENT, ident, 0);
+}

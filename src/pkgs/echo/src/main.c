@@ -36,6 +36,7 @@ int _start(void)
     }
     else  
     {
+        assert(ipc_set_identifier(ECHO_IDENT) == 0);
         server();
     }
 

@@ -20,8 +20,6 @@ int _start(void)
     task_t *client = loader_binary(executable, "/bin/echo.elf");
     task_t *server = loader_binary(executable, "/bin/echo.elf");
 
-    server->ident = ECHO_IDENT;
-
     sched_push(client);
     sched_push(server);
 

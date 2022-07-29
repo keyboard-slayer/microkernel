@@ -4,6 +4,7 @@
 #include <kernel/inc/pmm.h>
 #include <kernel/inc/arch.h>
 #include <kernel/inc/utils.h>
+#include <kernel/inc/loader.h>
 
 #include <stdint.h>
 #include <unistd.h>
@@ -13,7 +14,6 @@
 #include "../inc/gdt.h"
 #include "../inc/regs.h"
 #include "../inc/asm.h"
-#include "kernel/inc/loader.h"
 
 typedef int64_t (*syscall_t)(regs_t *);
 
@@ -93,6 +93,20 @@ int64_t syscall_recvipc_sync(__attribute__((unused)) regs_t *regs)
     return (uint64_t) ipc;
 }
 
+int64_t syscall_set_ident(regs_t *regs)
+{
+    task_t *maybe_task = sched_by_ident(regs->rbx);
+    task_t *task = sched_current();
+
+    if (maybe_task == NULL)
+    {
+        task->ident = regs->rbx;
+        return 0;
+    }
+
+    return 1;
+}
+
 syscall_t syscall_matrix[] = {
     [SYS_LOG] = syscall_log,
     [SYS_GETPID] = syscall_getpid,
@@ -100,7 +114,8 @@ syscall_t syscall_matrix[] = {
     [SYS_FREE] = syscall_free,
     [SYS_REALLOC] = syscall_realloc,
     [SYS_SENDIPC] = syscall_sendipc,
-    [SYS_RECVIPC_SYNC] = syscall_recvipc_sync
+    [SYS_RECVIPC_SYNC] = syscall_recvipc_sync,
+    [SYS_SETIDENT] = syscall_set_ident
 };
 
 int64_t syscall_handler(regs_t *regs)
