@@ -4,7 +4,7 @@
 #include <assert.h>
 #include <ipc.h>
 
-#include <protocol/inc/echo.h>
+#include <idl/inc/echo.h>
 
 #define ECHO_MESSAGE_SIZE 8192
 

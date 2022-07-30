@@ -7,6 +7,7 @@ import sys
 from os.path import basename
 from inspect import getfile, getsource
 from hashlib import md5
+from typing import NewType
 
 type_translator = {}
 headers = set([])
@@ -14,6 +15,8 @@ compiledc = []
 compiledh = []
 func_enum = []
 source_code = ""
+
+u64 = NewType('u64', int)
 
 def to_json_type(type_name):
     if type_name in type_translator.values():
@@ -41,6 +44,9 @@ def to_ctype(type_name):
             return "char *"
         case "int":
             return "long"
+        case "u64":
+            headers.add("stdint.h")
+            return "uint64_t"
         case "bool":
             headers.add("stdbool.h")
             return "bool"
