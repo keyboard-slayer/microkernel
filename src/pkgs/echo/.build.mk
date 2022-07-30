@@ -13,7 +13,7 @@ $(BUILD_ECHO)/%.s.o: %.s
 	$(AS) -o $@ $< $(ASFLAGS)
 
 $(ECHO): $(ECHO_OBJ)
-	@$(MKCWDsrc/liballoc/compat)
+	@$(MKCWD)
 	$(LD) $(LDFLAGS) -o $@ $^ -T src/pkgs/link.ld
 
 echo: $(ECHO)

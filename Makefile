@@ -48,7 +48,7 @@ QEMU_FLAGS =												\
 	-drive file=fat:rw:sysroot,media=disk,format=raw		\
 	-enable-kvm												\
 	
-include src/protocol/.build.mk
+include src/idl/.build.mk
 include src/unittests/.build.mk
 include src/$(ARCH)/.build.mk
 include src/$(LOADER)/.build.mk

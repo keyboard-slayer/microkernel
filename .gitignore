@@ -2,5 +2,5 @@ sysroot/
 build/
 .gdb_history
 __pycache__/
-src/protocol/inc/
-src/protocol/src/
+src/idl/inc/
+src/idl/src/
