@@ -5,8 +5,6 @@
 #include "../inc/elf.h"
 #include "../inc/sched.h"
 
-#include "protocol/inc/echo.h"
-
 #include <assert.h>
 
 int _start(void)
