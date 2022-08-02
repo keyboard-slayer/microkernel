@@ -58,6 +58,7 @@ static void output_exception(regs_t const *regs)
     __asm__ volatile ("mov %%cr3, %0":"=r" (cr3));
     __asm__ volatile ("mov %%cr4, %0":"=r" (cr4));
 
+    klog_unlock();
     LOCK(int_handler_lock);
 
     klog(NONE, "\n");

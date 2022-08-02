@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <unistd.h>
 #include <ipc.h>
+#include <cap.h>
 
 #include "../inc/syscall.h"
 #include "../inc/gdt.h"
@@ -107,6 +108,43 @@ int64_t syscall_set_ident(regs_t *regs)
     return 1;
 }
 
+int64_t syscall_ask_capability(regs_t *regs)
+{
+    task_t *task = sched_current();
+
+    switch (regs->rbx) 
+    {
+        case CAP_FB:
+        {
+            fb_t framebuffer = loader_get_fb();
+            void *buf = malloc(sizeof(fb_t));
+
+            memcpy(buf, &framebuffer, sizeof(fb_t));
+
+            vmm_map(task->space, (virtual_physical_map_t) {
+                .physical = ALIGN_DOWN((uintptr_t) buf - loader_get_hhdm(), PAGE_SIZE),
+                .virtual = ALIGN_DOWN((uintptr_t) buf, PAGE_SIZE),
+                .length = ALIGN_UP(sizeof(fb_t), PAGE_SIZE)
+            }, true);
+
+            vmm_map(task->space, (virtual_physical_map_t) {
+                .physical = ALIGN_DOWN(framebuffer.addr - loader_get_hhdm(), PAGE_SIZE),
+                .virtual = ALIGN_DOWN(framebuffer.addr, PAGE_SIZE),
+                .length = ALIGN_UP(framebuffer.height * framebuffer.pitch, PAGE_SIZE)
+            }, true);
+
+            return (uintptr_t) buf;
+        }
+
+        default: 
+        {
+            klog(ERROR, "Unknown capability");
+        }
+    }
+
+    return 0;
+}
+
 syscall_t syscall_matrix[] = {
     [SYS_LOG] = syscall_log,
     [SYS_GETPID] = syscall_getpid,
@@ -115,7 +153,8 @@ syscall_t syscall_matrix[] = {
     [SYS_REALLOC] = syscall_realloc,
     [SYS_SENDIPC] = syscall_sendipc,
     [SYS_RECVIPC_SYNC] = syscall_recvipc_sync,
-    [SYS_SETIDENT] = syscall_set_ident
+    [SYS_SETIDENT] = syscall_set_ident,
+    [SYS_CAP] = syscall_ask_capability
 };
 
 int64_t syscall_handler(regs_t *regs)

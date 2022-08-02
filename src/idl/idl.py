@@ -17,23 +17,36 @@ func_enum = []
 source_code = ""
 
 u64 = NewType('u64', int)
+usize = NewType('usize', int)
+u32 = NewType('u32', int)
+
+def auto():
+    pass
+
+def c_notation(code):
+    pass
+
+def ptr(type):
+    pass
 
 def to_json_type(type_name):
     if type_name in type_translator.values():
         return "number"
+    
+    if type_name[-1] == "*":
+        return "ptr"
 
     match type_name:
         case "char *":
             return "string"
-        case "long":
+        case "long" | "int" | "uint64_t" | "uintptr_t":
             return "number"
         case "bool":
             return "bool"
         case "void":
             return "null"
         case _:
-            print(f"Unknown type: {type_name}")
-            exit(1)
+            raise Exception(f"Unknown type: {type_name}")
 
 def to_ctype(type_name):
     if type_name in type_translator:
@@ -44,15 +57,20 @@ def to_ctype(type_name):
             return "char *"
         case "int":
             return "long"
+        case "u32":
+            headers.add("stdint.h")
+            return "uint32_t"
         case "u64":
             headers.add("stdint.h")
             return "uint64_t"
+        case "usize":
+            headers.add("stddef.h")
+            return "size_t"
         case "bool":
             headers.add("stdbool.h")
             return "bool"
         case _:
-            print(f"Unknown type: {type_name}")
-            exit(1)
+            raise Exception(f"Unknown type: {type_name}")
 
 
 class HGen(ast.NodeTransformer):
@@ -66,7 +84,16 @@ class HGen(ast.NodeTransformer):
         global source_code
         identifier = "0x"+str(md5(self.module_name.encode()).hexdigest()[:8])
         filename = os.path.join(sys.argv[1], "inc", f"{self.module_name}.h")
-        func_args = [(arg.arg, to_ctype(arg.annotation.id)) for arg in node.args.args]
+        func_args = []
+
+        for arg in node.args.args:
+            if type(arg.annotation) == ast.Name:
+                func_args.append((arg.arg, to_ctype(arg.annotation.id)))
+            elif type(arg.annotation) == ast.Call:
+                if arg.annotation.func.id == "ptr":
+                    func_args.append((arg.arg, to_ctype(arg.annotation.args[0].id) + " *"))
+            else:
+                raise Exception(f"Can't use {type(arg.annotation)} node type")
 
         if len(func_args) == 0:
             args = "void"
@@ -81,6 +108,11 @@ class HGen(ast.NodeTransformer):
             else:
                 print(f"Unknown return type: {node.returns.value}")
                 exit(1)
+        elif type(node.returns) == ast.Call:
+            if node.returns.func.id == "ptr":
+                return_type = f"{to_ctype(node.returns.args[0].id)} *"
+            else:
+                raise Exception("Unknown return type")
         else:
             return_type = to_ctype(node.returns.id)
 
@@ -90,6 +122,9 @@ class HGen(ast.NodeTransformer):
                 f.write("#include <ipc.h>\n#include <json.h>\n\n")
 
         with open(filename, "a") as f:
+            if source_code:
+                f.write(source_code)
+                source_code = ""
             with open(os.path.join(os.path.dirname(__file__), "endpoint.h"), "r") as endpoint:
                 template = endpoint.read()
 
@@ -110,6 +145,8 @@ class HGen(ast.NodeTransformer):
                 rpc_id = len(compiledh),
                 rpc_args = args
             ))
+
+            compiledh.append(self.module_name)
             
 
 class CGen(ast.NodeTransformer):
@@ -121,7 +158,14 @@ class CGen(ast.NodeTransformer):
 
     def visit_FunctionDef(self, node):
         func_name = node.name
-        func_args = [(arg.arg, to_ctype(arg.annotation.id)) for arg in node.args.args]
+        func_args = []
+
+        for arg in node.args.args:
+            if type(arg.annotation) == ast.Name:
+                func_args.append((arg.arg, to_ctype(arg.annotation.id)))
+            elif type(arg.annotation) == ast.Call:
+                if arg.annotation.func.id == "ptr":
+                    func_args.append((arg.arg, to_ctype(arg.annotation.args[0].id) + " *"))
 
         if len(func_args) == 0:
             args = "void"
@@ -136,6 +180,11 @@ class CGen(ast.NodeTransformer):
             else:
                 print(f"Unknown return type: {node.returns.value}")
                 exit(1)
+        elif type(node.returns) == ast.Call:
+            if node.returns.func.id == "ptr":
+                return_type = f"{to_ctype(node.returns.args[0].id)} *"
+            else:
+                raise Exception("Unknown return type")
         else:
             return_type = to_ctype(node.returns.id)
 
@@ -194,5 +243,40 @@ def enum(cls):
 
     source_code += f"""enum {cls.__name__.upper()}
 {{
-    {f'{chr(10)}    '.join(f"{k} = {v}," for k, v in enum_as_dict.items())}
+    {f'{chr(10)}    '.join(f"{k} = {v}," if v else f"{k}," for k, v in enum_as_dict.items())}
 }};\n\n"""
+
+
+
+class StructGen(ast.NodeTransformer):
+    def __init__(self):
+        self.struct = ""
+        self.name = ""
+
+    def visit_ClassDef(self, node):
+        self.generic_visit(node)
+        self.name = node.name
+
+    def visit_AnnAssign(self, node):
+        self.generic_visit(node)
+
+        if type(node.annotation) == ast.Name:
+            self.struct += f"    {to_ctype(node.annotation.id)} {node.target.id};\n"
+        elif type(node.annotation) == ast.Call:
+            if node.annotation.func.id == "ptr":
+                self.struct += f"    {to_ctype(node.annotation.args[0].id)} * {node.target.id};\n"
+            elif node.annotation.func.id == "c_notation":
+                self.struct += f"    {node.annotation.args[0].value};\n"
+
+    def output(self):
+        return (f"typedef struct {self.name.upper()} {{\n{self.struct}}} {self.name}_t;\n\n", self.name)
+
+def struct(cls):
+    global source_code
+    global type_translator
+
+    gen = StructGen()
+    gen.visit(ast.parse(getsource(cls).strip()))
+    code, name  = gen.output()
+    source_code += code
+    type_translator[name] = f"{name}_t"

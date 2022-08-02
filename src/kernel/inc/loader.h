@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <cap.h>
 
 #include "utils.h"
 
@@ -40,6 +41,7 @@ typedef struct
     size_t length;
 } memmaps_t;
 
+
 memmaps_t *loader_get_memmap(void);
 uint64_t loader_get_hhdm(void);
 uint64_t loader_get_pbase(void);
@@ -47,5 +49,6 @@ uint64_t loader_get_vbase(void);
 void *loader_get_rsdp(void);
 void *loader_get_module(char const *name);
 void loader_boot_other_cpus(void);
+fb_t loader_get_fb(void);
 
 #endif /* !KERNEL_INC_LOADER_H */

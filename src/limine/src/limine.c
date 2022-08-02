@@ -7,6 +7,7 @@
 #include <x86_64/inc/madt.h>
 
 #include <stddef.h>
+#include <stdatomic.h>
 
 #include "../inc/limine.h"
 
@@ -37,6 +38,11 @@ volatile struct limine_rsdp_request rsdp_request = {
 
 volatile struct limine_module_request module_request = {
     .id = LIMINE_MODULE_REQUEST,
+    .revision = 0,
+};
+
+volatile struct limine_framebuffer_request framebuffer_request = {
+    .id = LIMINE_FRAMEBUFFER_REQUEST,
     .revision = 0,
 };
 
@@ -148,4 +154,22 @@ void loader_boot_other_cpus(void)
     }
 
     klog(OK, "All CPUs booted");
+}
+
+fb_t loader_get_fb(void)
+{
+    if (framebuffer_request.response == NULL)
+    {
+        return (fb_t) {0};
+    }
+
+    struct limine_framebuffer *fb = framebuffer_request.response->framebuffers[0];
+
+    return (fb_t) {
+        .width = fb->width,
+        .height = fb->height,
+        .pitch = fb->pitch,
+        .bpp = fb->bpp,
+        .addr = (uintptr_t) fb->address,
+    };
 }

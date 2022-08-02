@@ -129,7 +129,7 @@ static json_t json_parse_number(reader_t *r)
     
     char *tmp = strndup(number_builder.data, number_builder.length);
 
-    long ret = atol(tmp);
+    int64_t ret = atol(tmp);
 
     free(tmp);
     vec_free(&number_builder);
@@ -278,7 +278,7 @@ json_t json_string(char const *s)
     return ret;
 }
 
-json_t json_number(long i)
+json_t json_number(int64_t i)
 {
     json_t ret = (json_t) {
         .type = JSON_NUMBER,
@@ -428,4 +428,9 @@ char *json_dump_object(json_t j, vec_char_t builder)
     char *ret = strdup(builder.data);
     vec_free(&builder);
     return ret;
+}
+
+json_t json_ptr(void *p)
+{
+    return json_number((uintptr_t) p);
 }

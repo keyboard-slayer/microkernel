@@ -1,5 +1,3 @@
-#include <stdio.h>
-
 {C_response_type} {rpc_module}_{rpc_function}({rpc_args})
 {{
     json_t {rpc_module}_{rpc_function}_req = json_object();

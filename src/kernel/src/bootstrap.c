@@ -12,14 +12,14 @@ int _start(void)
     arch_init();
     sched_init();
 
-    void *executable = loader_get_module("/bin/echo.elf");
+    void *executable = loader_get_module("/bin/tty.elf");
     assert(executable != NULL);
 
-    task_t *client = loader_binary(executable, "/bin/echo.elf");
-    task_t *server = loader_binary(executable, "/bin/echo.elf");
+    task_t *client = loader_binary(executable, "/bin/tty.elf");
+    // task_t *server = loader_binary(executable, "/bin/echo.elf");
 
     sched_push(client);
-    sched_push(server);
+    // sched_push(server);
 
     for (;;);
 

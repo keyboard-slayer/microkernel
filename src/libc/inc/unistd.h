@@ -15,7 +15,13 @@ enum syscall
     SYS_ALLOC,
     SYS_FREE,
     SYS_REALLOC,
-    SYS_SETIDENT
+    SYS_SETIDENT,
+    SYS_CAP
+};
+
+enum capability 
+{
+    CAP_FB
 };
 
 void syslog(char const *message);
