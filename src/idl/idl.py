@@ -34,8 +34,6 @@ def to_json_type(type_name):
     if type_name in type_translator.values() and type_name.startswith("enum "):
         return "number"
     
-    if type_name[-1] == "*":
-        return "ptr"
 
     match type_name:
         case "char *":
@@ -47,8 +45,9 @@ def to_json_type(type_name):
         case "void":
             return "null"
         case _:
-            return "blabla"
-            # raise Exception(f"Unknown type: {type_name}")
+            if type_name[-1] == "*":
+                return "ptr"
+            raise Exception(f"Unknown type: {type_name}")
 
 def to_ctype(type_name):
     if type_name in type_translator:
@@ -270,14 +269,14 @@ class StructGen(ast.NodeTransformer):
 
         if type(node.annotation) == ast.Name:
             self.struct += f"    {to_ctype(node.annotation.id)} {node.target.id};\n"
-            self.json_pushes.append(f"    json_push(&ret, json_{to_json_type(to_ctype(node.annotation.id))}(data.{node.target.id}));")
+            self.json_pushes.append(f"    json_push(&ret, \"{node.target.id}\", json_{to_json_type(to_ctype(node.annotation.id))}(data.{node.target.id}));")
         elif type(node.annotation) == ast.Call:
             if node.annotation.func.id == "ptr":
-                self.json_pushes.append(f"    json_push(&ret, json_ptr(data.{node.target.id});\n")
+                self.json_pushes.append(f"    json_push(&ret, \"{node.target.id}\", json_ptr(data.{node.target.id});\n")
                 self.struct += f"    {to_ctype(node.annotation.args[0].id)} * {node.target.id};"
             elif node.annotation.func.id == "c_notation":
                 self.struct += f"    {node.annotation.args[0].value};\n"
-                self.json_pushes.append(f"    json_push(&ret, {node.annotation.args[1].value}(data.{node.target.id}));")
+                self.json_pushes.append(f"    json_push(&ret, \"{node.target.id}\", {node.annotation.args[1].value}(data.{node.target.id}));")
 
     def output(self):
         with open(os.path.join(os.path.dirname(__file__), "json_gen.c"), "r") as j:

@@ -1,4 +1,6 @@
+#include "unistd.h"
 #include <idl/inc/vfs.h>
+#include <stdlib.h>
 
 static int ustar_open(char *path, int flags)
 {
@@ -12,13 +14,15 @@ static int ustar_read(int fd, void *buf, size_t count)
 
 __attribute__((noreturn)) int _start(void)
 {
-    vfs_register_filesystem((filesystem_t) {
-        .name = "ustar",
-        .open = ustar_open,
-        .read = ustar_read,
-    });
+    if (vfs_register_filesystem("ustar") != 0)
+    {
+        // TODO: debug: couldn't register ustar filesystem
+        for (;;);
+    }
+
+    ipc_t *ipc = ipc_receive_sync();
 
     for (;;);
-
+    
     __builtin_unreachable();
 }
