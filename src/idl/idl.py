@@ -14,7 +14,8 @@ headers = set([])
 compiledc = []
 compiledh = []
 func_enum = []
-source_code = ""
+hsource_code = ""
+csource_code = ""
 
 u64 = NewType('u64', int)
 usize = NewType('usize', int)
@@ -23,14 +24,14 @@ u32 = NewType('u32', int)
 def auto():
     pass
 
-def c_notation(code):
+def c_notation(code, type):
     pass
 
 def ptr(type):
     pass
 
 def to_json_type(type_name):
-    if type_name in type_translator.values():
+    if type_name in type_translator.values() and type_name.startswith("enum "):
         return "number"
     
     if type_name[-1] == "*":
@@ -46,7 +47,8 @@ def to_json_type(type_name):
         case "void":
             return "null"
         case _:
-            raise Exception(f"Unknown type: {type_name}")
+            return "blabla"
+            # raise Exception(f"Unknown type: {type_name}")
 
 def to_ctype(type_name):
     if type_name in type_translator:
@@ -81,7 +83,7 @@ class HGen(ast.NodeTransformer):
             os.mkdir(os.path.join(sys.argv[1], "inc"))
 
     def visit_FunctionDef(self, node):
-        global source_code
+        global hsource_code
         identifier = "0x"+str(md5(self.module_name.encode()).hexdigest()[:8])
         filename = os.path.join(sys.argv[1], "inc", f"{self.module_name}.h")
         func_args = []
@@ -122,9 +124,9 @@ class HGen(ast.NodeTransformer):
                 f.write("#include <ipc.h>\n#include <json.h>\n\n")
 
         with open(filename, "a") as f:
-            if source_code:
-                f.write(source_code)
-                source_code = ""
+            if hsource_code:
+                f.write(hsource_code)
+                hsource_code = ""
             with open(os.path.join(os.path.dirname(__file__), "endpoint.h"), "r") as endpoint:
                 template = endpoint.read()
 
@@ -157,6 +159,7 @@ class CGen(ast.NodeTransformer):
             os.mkdir(os.path.join(sys.argv[1], "src"))
 
     def visit_FunctionDef(self, node):
+        global csource_code
         func_name = node.name
         func_args = []
 
@@ -219,6 +222,10 @@ class CGen(ast.NodeTransformer):
                 rpc_ret = "" if return_type == "void" else  f"\n    return ret;"
             ))
 
+            if csource_code:
+                f.write(csource_code)
+                csource_code = ""
+
 
 def endpoint(cls):
     module_name = basename(getfile(cls)).split(".")[0]
@@ -233,7 +240,7 @@ def endpoint(cls):
 
 
 def enum(cls):
-    global source_code
+    global hsource_code
     global type_translator
 
     enum_fields = list(filter(lambda x: not x.startswith("__"), dir(cls)))
@@ -241,7 +248,7 @@ def enum(cls):
 
     type_translator[cls.__name__] = f"enum {cls.__name__.upper()}"
 
-    source_code += f"""enum {cls.__name__.upper()}
+    hsource_code += f"""enum {cls.__name__.upper()}
 {{
     {f'{chr(10)}    '.join(f"{k} = {v}," if v else f"{k}," for k, v in enum_as_dict.items())}
 }};\n\n"""
@@ -252,6 +259,7 @@ class StructGen(ast.NodeTransformer):
     def __init__(self):
         self.struct = ""
         self.name = ""
+        self.json_pushes = []
 
     def visit_ClassDef(self, node):
         self.generic_visit(node)
@@ -262,21 +270,44 @@ class StructGen(ast.NodeTransformer):
 
         if type(node.annotation) == ast.Name:
             self.struct += f"    {to_ctype(node.annotation.id)} {node.target.id};\n"
+            self.json_pushes.append(f"    json_push(&ret, json_{to_json_type(to_ctype(node.annotation.id))}(data.{node.target.id}));")
         elif type(node.annotation) == ast.Call:
             if node.annotation.func.id == "ptr":
-                self.struct += f"    {to_ctype(node.annotation.args[0].id)} * {node.target.id};\n"
+                self.json_pushes.append(f"    json_push(&ret, json_ptr(data.{node.target.id});\n")
+                self.struct += f"    {to_ctype(node.annotation.args[0].id)} * {node.target.id};"
             elif node.annotation.func.id == "c_notation":
                 self.struct += f"    {node.annotation.args[0].value};\n"
+                self.json_pushes.append(f"    json_push(&ret, {node.annotation.args[1].value}(data.{node.target.id}));")
 
     def output(self):
-        return (f"typedef struct {self.name.upper()} {{\n{self.struct}}} {self.name}_t;\n\n", self.name)
+        with open(os.path.join(os.path.dirname(__file__), "json_gen.c"), "r") as j:
+            template = j.read()
+            json_translator = template.format(
+                rpc_struct = f"{self.name}_t",
+                rpc_struct_push = "\n".join(self.json_pushes)
+            )
+
+        json_def = f"json_t json_{self.name}({self.name}_t data);\n"
+        return (f"typedef struct {self.name.upper()} {{\n{self.struct}}} {self.name}_t;\n\n", self.name, json_translator, json_def)
 
 def struct(cls):
-    global source_code
+    global hsource_code
+    global csource_code
     global type_translator
 
     gen = StructGen()
     gen.visit(ast.parse(getsource(cls).strip()))
-    code, name  = gen.output()
-    source_code += code
+    code, name, json_translator, json_def  = gen.output()
+    hsource_code += f"{code}\n{json_def}"
+    csource_code += f"{json_translator}\n\n"
     type_translator[name] = f"{name}_t"
+
+
+def generate_header(mod, headers={}):
+    with open(os.path.join(sys.argv[1], "inc", f"{mod}.h"), "w") as f:
+        f.write("#pragma once\n")
+
+        for header in headers:
+            f.write(f'#include <{header}>\n')
+
+        f.write(hsource_code + "\n")

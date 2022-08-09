@@ -12,14 +12,25 @@ int _start(void)
     arch_init();
     sched_init();
 
-    void *executable = loader_get_module("/bin/tty.elf");
-    assert(executable != NULL);
+    module_t vfs = loader_get_module("/boot/mod/vfs.elf");
+    module_t initfs = loader_get_module("/boot/initrd.img");
+    module_t ustar = loader_get_module("/boot/mod/ustar.elf");
 
-    task_t *client = loader_binary(executable, "/bin/tty.elf");
-    // task_t *server = loader_binary(executable, "/bin/echo.elf");
+    assert(vfs.ptr != NULL);
+    assert(initfs.ptr != NULL);
+    assert(ustar.ptr != NULL);
 
-    sched_push(client);
-    // sched_push(server);
+    task_t *vfs_task = loader_binary(vfs.ptr, "/boot/mod/vfs.elf");
+    task_t *ustar_task = loader_binary(ustar.ptr, "/boot/mod/ustar.elf");
+
+    vmm_map(ustar_task->space, (virtual_physical_map_t) {
+        .physical = (uintptr_t) initfs.ptr,
+        .virtual = (uintptr_t) initfs.ptr,
+        .length = vfs.length
+    }, true);
+
+    sched_push(vfs_task);
+    sched_push(ustar_task);
 
     for (;;);
 

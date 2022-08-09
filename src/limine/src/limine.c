@@ -113,22 +113,25 @@ void *loader_get_rsdp(void)
     return rsdp_request.response->address;
 }
 
-void *loader_get_module(char const *name)
+module_t loader_get_module(char const *name)
 {
     if (module_request.response == NULL)
     {
-        return NULL;
+        return (module_t) {0};
     }
 
     for (size_t i = 0; i < module_request.response->module_count; i++)
     {
         if (memcmp(module_request.response->modules[i]->path, name, strlen(name)) == 0)
         {
-            return module_request.response->modules[i]->address;
+            return (module_t) {
+                .ptr = module_request.response->modules[i]->address,
+                .length = module_request.response->modules[i]->size,
+            };
         }
     }
 
-    return NULL;
+    return (module_t) {0};
 }
 
 void loader_boot_other_cpus(void)

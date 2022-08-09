@@ -17,4 +17,6 @@ typedef struct
 
 typedef vec(ipc_t *) ipc_mailbox_t;
 
+int rpc_get_function(ipc_t *ipc);
+
 #endif /* !LIBC_INC_IPC_H */

@@ -1,7 +1,7 @@
 {C_response_type} {rpc_module}_{rpc_function}({rpc_args})
 {{
     json_t {rpc_module}_{rpc_function}_req = json_object();
-    json_push(&{rpc_module}_{rpc_function}_req, "rpc_function", json_string("{rpc_function}"));
+    json_push(&{rpc_module}_{rpc_function}_req, "rpc_function", json_number({rpc_function_UPPER}));
 
     json_t rpc_args = json_object();
     {rpc_args_push}

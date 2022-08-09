@@ -14,5 +14,6 @@ char *strrchr(const char *s, int c);
 char *strdup(const char *s);
 char *strndup(const char *s, size_t n);
 int strcmp(const char *s1, const char *s2);
+char *strtok(char *restrict str, const char *restrict delim);
 
 #endif /* !LIBC_INC_STRING_H */

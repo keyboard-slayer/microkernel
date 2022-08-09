@@ -36,5 +36,8 @@ void vec_expand_(char **data, size_t *length, size_t *capacity, int memsz);
     (v)->data[--((v)->length)]
 
 typedef vec(char) vec_char_t;
+typedef vec(char *) vec_str_t;
+
+vec_str_t vec_split(char *str, char *delim);
 
 #endif /* !LIBC_INC_VEC_H */

@@ -17,3 +17,19 @@ void vec_expand_(char **data, size_t *length, size_t *capacity, int memsz)
         *capacity = n;
     }
 }
+
+vec_str_t vec_split(char *str, char *delim)
+{
+    vec_str_t vec;
+    vec_init(&vec);
+
+    char *p = strtok(str, delim);
+
+    while (p)
+    {
+        vec_push(&vec, p);
+        p = strtok(NULL, delim);
+    }
+
+    return vec;
+}

@@ -114,3 +114,63 @@ void *memset(void *s, int c, size_t n)
 
     return s;
 }
+
+char *strtok(char *restrict str, const char *restrict delim)
+{
+    static char *p;
+
+    if (!p && !str)
+    {
+        return NULL;
+    }
+
+    if (!str)
+    {
+        str = p;
+    }
+    else
+    {
+        p = str;
+    }
+
+    for (;;)
+    {
+        for (size_t i = 0; i < strlen(delim); i++)
+        {
+            if (*str == delim[i])
+            {
+                str++;
+                break;
+            }
+        }
+
+        if (*str == '\0')
+        {
+            return NULL;
+        }
+
+        break;
+    }
+
+    char *ret = str;
+    for (;;)
+    {
+        if (*str == '\0')
+        {
+            p = str;
+            return ret;
+        }
+
+        for (size_t i = 0; i < strlen(delim); i++)
+        {
+            if (*str == delim[i])
+            {
+                *str = '\0';
+                p = str + 1;
+                return ret;
+            }
+        }
+
+        str++;
+    }
+}

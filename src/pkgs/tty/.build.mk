@@ -18,4 +18,4 @@ $(TTY): $(TTY_OBJ)
 
 tty: $(TTY)
 	cp $(TTY) $(SYSROOT)/bin/tty.elf
-	@bash -c 'echo -e "\nMODULE_PATH=boot:///bin/tty.elf\n" >> $(SYSROOT)/boot/limine.cfg'
+	@bash -c 'echo -e "\nMODULE_PATH=boot:///boot/bin/tty.elf\n" >> $(SYSROOT)/boot/limine.cfg'
